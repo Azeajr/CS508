@@ -34,9 +34,9 @@ public class ThreadedSum {
         t1.join();
         t2.join();
 
-        System.out.println("First thread sum: " + threadSum1.sum);
-        System.out.println("Second thread sum: " + threadSum2.sum);
-        System.out.println("Total: " + (threadSum1.sum + threadSum2.sum));
+        System.out.println("First thread sum: " + threadSum2.sum);
+        System.out.println("Second thread sum: " + threadSum3.sum);
+        System.out.println("Total: " + (threadSum2.sum + threadSum3.sum));
 
     }
 }
