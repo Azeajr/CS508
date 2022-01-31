@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="bbee758e-233a-4c2a-909b-729acac5900f" name="Changes" comment="add threaded sum program&#10;&#10;Sum all numbers from 1-250_000_000 using two threads to split the work.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ThreadedSum/ThreadedSum.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ThreadedSum/ThreadedSum.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ThreadedSum.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ThreadedSum.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
