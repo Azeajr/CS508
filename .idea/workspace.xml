@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a558dae0-5735-4a57-bb59-8a9a56ad77ba" name="Changes" comment="adds setup to do time comparison between non-threaded and threaded">
+    <list default="true" id="a558dae0-5735-4a57-bb59-8a9a56ad77ba" name="Changes" comment="add textbooks and classwork example of Atomic references">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -23,6 +23,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -40,7 +41,14 @@
       <option name="project" value="LOCAL" />
       <updated>1643289526558</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="add textbooks and classwork example of Atomic references">
+      <created>1644096061605</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1644096061605</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -56,6 +64,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="adds setup to do time comparison between non-threaded and threaded" />
-    <option name="LAST_COMMIT_MESSAGE" value="adds setup to do time comparison between non-threaded and threaded" />
+    <MESSAGE value="add textbooks and classwork example of Atomic references" />
+    <option name="LAST_COMMIT_MESSAGE" value="add textbooks and classwork example of Atomic references" />
   </component>
 </project>
