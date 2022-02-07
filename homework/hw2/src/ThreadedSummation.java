@@ -1,25 +1,29 @@
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ThreadedSummation {
     private static class Summation implements Runnable {
-        BigInteger sum;
-        Iterator<Integer> iterator;
+        static AtomicReference finalSum = new AtomicReference<>(new BigInteger("0"));
+        BigInteger interSum;
+        List<Integer> randInts;
+        int startIndex, endIndex;
 
-        private Summation(List<Integer> randInts) {
-            iterator = randInts.iterator();
-            sum = new BigInteger("0");
+        private Summation(List<Integer> randInts, int startIndex, int endIndex) {
+            interSum = new BigInteger("0");
+            this.randInts=randInts;
+            this.startIndex=startIndex;
+            this.endIndex=endIndex;
         }
 
         @Override
         public void run() {
-            while(iterator.hasNext()){
-                sum = sum.add(BigInteger.valueOf(iterator.next().longValue()));
+            for (int i = startIndex; i < endIndex; i++) {
+                interSum = interSum.add(BigInteger.valueOf(randInts.get(i).longValue()));
             }
+            finalSum.updateAndGet((v)-> ((BigInteger)v).add(interSum));
         }
     }
 
@@ -56,10 +60,36 @@ public class ThreadedSummation {
 
     public static void main(String[] args) throws InterruptedException {
         List<Integer> testData = randIntegerArray(250, 100);
-        Summation temp = new Summation(testData);
-        System.out.println("Nano Seconds: " + timeTrial(temp, 1) + "\nSum: " + temp.sum);
+        Summation temp = new Summation(testData,0, testData.size()/2);
+        Summation temp2 = new Summation(testData,testData.size()/2, testData.size());
 
-        Summation temp2 = new Summation(testData);
-        System.out.println("Nano Seconds: " + timeTrial(temp2, 2) + "\nSum: " + temp2.sum);
+        Thread t1 = new Thread(temp);
+        Thread t2 = new Thread(temp2);
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        System.out.println("Sum: "+ temp.finalSum);
+        System.out.println("Sum2: "+ temp2.finalSum);
+
+        Summation temp3 = new Summation(testData,0, testData.size()/2);
+        Summation temp4 = new Summation(testData,testData.size()/2, testData.size());
+
+        Thread t3 = new Thread(temp3);
+        Thread t4 = new Thread(temp4);
+        t3.start();
+        t4.start();
+        t3.join();
+        t4.join();
+
+        System.out.println("Sum: "+ temp3.finalSum);
+        System.out.println("Sum2: "+ temp4.finalSum);
+
+        long numSUm = 0;
+        for (int i = 0; i < testData.size(); i++) {
+            numSUm+= testData.get(i).intValue();
+        }
+        System.out.println("Manual sum: " + numSUm);
     }
 }
