@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ThreadedSummation {
     /**
      * Summation class will handle adding the integers contained withing a portion of a list.  By using multiple
-     * instances we can subdivide the list and split the work of find the sum across different threads.
+     * instances we can subdivide the list and split the work across different threads.
      */
     private static class Summation implements Runnable {
         static AtomicReference<BigInteger> finalSum = new AtomicReference<>(new BigInteger("0"));
@@ -154,7 +154,9 @@ public class ThreadedSummation {
 
         for (int i = 0; i < 100; i++) {
             histogram[i] = timeTrial(testData, i + 1);
-            System.out.printf("Using %d threads\n The sum was %d\n The computation took %d milliseconds\n", i+1, Summation.getFinalSum(), histogram[i]);
+            System.out.printf("Using %d threads\n", i+1);
+            System.out.printf("The sum was %d\n", Summation.getFinalSum());
+            System.out.printf("The computation took %d milliseconds\n", histogram[i]);
             Summation.resetFinalSum();
         }
 
