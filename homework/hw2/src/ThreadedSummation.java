@@ -81,7 +81,7 @@ public class ThreadedSummation {
      * Function to facilitate the testing of the Summation class using various number of threads.
      * @param testData  The List to be used by all instances of the Summation class.
      * @param numThreads Number of threads to use for this time trial run
-     * @return The number of nanoseconds elapsed during the trial run as a long value
+     * @return The number of milliseconds elapsed during the trial run as a long value
      * @throws InterruptedException Exception thrown when a thread is while it is waiting, sleeping, etc.
      */
     public static long timeTrial(List<Integer> testData, int numThreads) throws InterruptedException {
@@ -104,7 +104,7 @@ public class ThreadedSummation {
             threads[i] = new Thread(new Summation(testData, startIndex, endIndex));
         }
 
-        long start = System.nanoTime();
+        long start = System.currentTimeMillis();
 
         for (Thread x : threads) {
             x.start();
@@ -114,7 +114,7 @@ public class ThreadedSummation {
             x.join();
         }
 
-        long end = System.nanoTime();
+        long end = System.currentTimeMillis();
         return end - start;
     }
 
@@ -154,6 +154,7 @@ public class ThreadedSummation {
 
         for (int i = 0; i < 100; i++) {
             histogram[i] = timeTrial(testData, i + 1);
+            System.out.printf("Using %d threads\n The sum was %d\n The computation took %d milliseconds\n", i+1, Summation.getFinalSum(), histogram[i]);
             Summation.resetFinalSum();
         }
 
