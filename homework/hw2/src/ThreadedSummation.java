@@ -4,13 +4,29 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * CS508
+ * @author zea_an
+ * @since 2022-02-08
+ */
 public class ThreadedSummation {
+    /**
+     * Summation class will handle adding the integers contained withing a portion of a list.  By using multiple
+     * instances we can subdivide the list and split the work of find the sum across different threads.
+     */
     private static class Summation implements Runnable {
         static AtomicReference<BigInteger> finalSum = new AtomicReference<>(new BigInteger("0"));
         BigInteger interSum;
         List<Integer> randInts;
         int startIndex, endIndex;
 
+        /**
+         * Summation class constructor
+         * Computes the sum of the Integers within the portion of the list that is passed.
+         * @param randInts List of Integer objects
+         * @param startIndex The starting index of the section of the list to be summed
+         * @param endIndex The ending index(inclusive) of the section of the list to be summed
+         */
         private Summation(List<Integer> randInts, int startIndex, int endIndex) {
             interSum = new BigInteger("0");
             this.randInts = randInts;
@@ -18,6 +34,9 @@ public class ThreadedSummation {
             this.endIndex = endIndex;
         }
 
+        /**
+         *
+         */
         @Override
         public void run() {
             for (int i = startIndex; i <= endIndex; i++) {
@@ -26,15 +45,29 @@ public class ThreadedSummation {
             finalSum.updateAndGet(v -> v.add(interSum));
         }
 
+        /**
+         * Returns the final sum from the Summation class
+         * @return The cumulative sum from collected from every Summation object
+         */
         public static BigInteger getFinalSum() {
             return finalSum.get();
         }
 
+        /**
+         * Resets the final sum back to zero to be used to sum another list
+         */
         public static void resetFinalSum() {
             finalSum = new AtomicReference<>(new BigInteger("0"));
         }
     }
 
+    /**
+     * Creates a List object populated with arraySize many random Integers whose value will range from 0 to
+     * maxValue(exclusive).
+     * @param arraySize Initial capacity of the list
+     * @param maxValue The high bound(exclusive) of the possible Integers in the list.
+     * @return List object containing random Integers
+     */
     public static List<Integer> randIntegerArray(int arraySize, int maxValue) {
         List<Integer> randInts = new ArrayList<>(arraySize);
         Random rand = new Random();
@@ -44,6 +77,13 @@ public class ThreadedSummation {
         return randInts;
     }
 
+    /**
+     * Function to facilitate the testing of the Summation class using various number of threads.
+     * @param testData  The List to be used by all instances of the Summation class.
+     * @param numThreads Number of threads to use for this time trial run
+     * @return The number of nanoseconds elapsed during the trial run as a long value
+     * @throws InterruptedException Exception thrown when a thread is while it is waiting, sleeping, etc.
+     */
     public static long timeTrial(List<Integer> testData, int numThreads) throws InterruptedException {
         Thread[] threads = new Thread[numThreads];
 
@@ -78,6 +118,10 @@ public class ThreadedSummation {
         return end - start;
     }
 
+    /**
+     * Prints a histogram from the array values passed in
+     * @param histogram An array representing values to be converted into string of characters for histogram
+     */
     public static void printHistogram(long[] histogram) {
         long largest = histogram[0];
         for (long l : histogram) {
@@ -91,9 +135,14 @@ public class ThreadedSummation {
         }
     }
 
-    public static String convertToStars(long nanoSeconds) {
+    /**
+     * Creates a string of stars of length equal to number passed in
+     * @param starCount Number of stars to produce
+     * @return String of stars of length starCount
+     */
+    public static String convertToStars(long starCount) {
         StringBuilder stars = new StringBuilder();
-        for (long j = 0; j < nanoSeconds; j++) {
+        for (long j = 0; j < starCount; j++) {
             stars.append('*');
         }
         return stars.toString();
