@@ -2,6 +2,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -118,6 +122,37 @@ public class ThreadedSummation {
         return end - start;
     }
 
+    public static long timeTrial(List<Integer> testData, int numThreads, ExecutorService pool) throws ExecutionException, InterruptedException {
+        Future[] taskResults = new Future[numThreads];
+
+        int smallStep = testData.size() / numThreads;
+        int overflow = testData.size() % numThreads;
+
+
+        int startIndex, endIndex = -1;
+
+        for (int i = 0; i < numThreads; i++) {
+
+            startIndex = endIndex + 1;
+            if (i < overflow) {
+                endIndex = startIndex + smallStep;
+            } else {
+                endIndex = startIndex + smallStep - 1;
+            }
+            taskResults[i] = pool.submit(new Summation(testData, startIndex, endIndex));
+        }
+
+        long start = System.currentTimeMillis();
+
+        for (Future x: taskResults){
+            x.get();
+        }
+
+        long end = System.currentTimeMillis();
+
+        return end - start;
+    }
+
     /**
      * Prints a histogram from the array values passed in
      * @param histogram An array representing values to be converted into string of characters for histogram
@@ -148,7 +183,7 @@ public class ThreadedSummation {
         return stars.toString();
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         List<Integer> testData = randIntegerArray(250_000_000, 100);
         long[] histogram = new long[100];
 
@@ -161,5 +196,21 @@ public class ThreadedSummation {
         }
 
         printHistogram(histogram);
+
+        ExecutorService workers = Executors.newFixedThreadPool(100);
+
+        histogram = new long[100];
+
+        for (int i = 0; i < 100; i++) {
+            histogram[i] = timeTrial(testData, i + 1, workers);
+            System.out.printf("Using %d threads\n", i+1);
+            System.out.printf("The sum was %d\n", Summation.getFinalSum());
+            System.out.printf("The computation took %d milliseconds\n", histogram[i]);
+            Summation.resetFinalSum();
+        }
+
+        printHistogram(histogram);
+
+        workers.shutdown();
     }
 }
