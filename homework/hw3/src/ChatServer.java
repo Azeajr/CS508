@@ -33,7 +33,7 @@ public class ChatServer implements Runnable {
             String name = fromClient.readLine();
             String str = fromClient.readLine();
 
-            while (str != null) {
+            while (str != null && !str.equalsIgnoreCase("close")) {
                 System.out.println(name + ": " + str);
 
                 List<PrintWriter> currentClients = clients.get();
@@ -49,6 +49,7 @@ public class ChatServer implements Runnable {
     }
 
     public void stop() throws IOException {
+        System.out.println("Client Closed Connection");
         clients.updateAndGet((list) -> {
             list.remove(toClient);
             return list;
