@@ -4,6 +4,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,38 +41,45 @@ public class Client {
 
     private static class PoemGetter {
         String rootSite = "http://raven.quartyard.us/stanza/";
-        static AtomicReference<String[]> poem = new AtomicReference<>(new String[18]);
+        static BlockingQueue<String>[] poem = new BlockingQueue[18];
         String line = null;
+
+        PoemGetter(){
+            for(int i = 0; i < poem.length; i++){
+                poem[i]= new ArrayBlockingQueue<String>(1);
+            }
+        }
 
         /**
          * Returns an array of threads that will get the stanza of the poem requested.
          * @param stanza The stanza of the poem we are trying to get
          * @return Array of 5 threads that will request this stanza from the site
          */
-        public Thread[] getStanzaThreads(int stanza){
-            Thread[] threads = new Thread[5];
+        public Thread[] getStanzaThreads(int stanza, int numThreads){
+            Thread[] threads = new Thread[numThreads];
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < numThreads; i++) {
                 Runnable x = () -> {
                     AtomicBoolean done = new AtomicBoolean(false);
 
                     try {
-                        line = makeRequest(rootSite + stanza);
+                        poem[stanza-1].add(makeRequest(rootSite + stanza));
+                        // line = makeRequest(rootSite + stanza);
 
-                        if (done.get()) {
-                            return;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+//                        if (done.get()) {
+//                            return;
+//                        }
+                    } catch (IllegalStateException | IOException ignore) {
                     }
-                    if (line != null) {
-                        poem.updateAndGet((poem) -> {
-                            poem[stanza-1] = line;
-                            done.set(true);
-
-                            return poem;
-                        });
-                    }
+//                    if (line != null && !done.get()) {
+//                        poem.updateAndGet((poem) -> {
+//                            System.out.println("Stanza: " + stanza);
+//                            poem[stanza-1] = line;
+//                            done.set(true);
+//
+//                            return poem;
+//                        });
+//                    }
                 };
 
                 threads[i] = new Thread(x);
@@ -81,26 +91,35 @@ public class Client {
          * Converts string array to a single string.
          * @return Raven poem as a string
          */
-        public String getPoem() {
+        public String getPoem() throws InterruptedException {
             StringBuilder sb = new StringBuilder();
 
-            String[] poemComplete = poem.get();
-            
-            for (String s : poemComplete) {
-                sb.append(s);
+//            String[] poemComplete = poem.get();
+            for(BlockingQueue<String> bq: poem){
+                sb.append(bq.poll(5, TimeUnit.SECONDS));
             }
 
             return sb.toString();
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
         PoemGetter poemGetter = new PoemGetter();
+        Thread print = new Thread(()->{
+            try {
+                System.out.println(poemGetter.getPoem());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        print.start();
 
-        Thread[][] poemThreads = new Thread[18][5];
+        int numThreads = 10;
+
+        Thread[][] poemThreads = new Thread[18][numThreads];
 
         for (int i = 0; i < 18; i++) {
-            poemThreads[i] = poemGetter.getStanzaThreads(i+1);
+            poemThreads[i] = poemGetter.getStanzaThreads(i+1, numThreads);
         }
 
         for (Thread[] poemThread : poemThreads) {
@@ -115,6 +134,8 @@ public class Client {
             }
         }
 
-        System.out.println(poemGetter.getPoem());
+        print.join();
+
+        // System.out.println(poemGetter.getPoem());
     }
 }
