@@ -2,36 +2,37 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <mutex>
+// #include <mutex>
 #include <thread>
 #include <unistd.h>
 #include <vector>
 
 class Summation {
-private:
-  std::mutex mutex;
+  // std::mutex m;
 
 public:
-  static unsigned long long finalSum;
-  unsigned long long interSum;
+  static int finalSum;
+  int interSum;
   std::vector<int> randInts;
   int startIndex, endIndex;
   Summation(std::vector<int> randInts) {
     interSum = 0;
     this->randInts = randInts;
   }
-  void run(int startIndex, int endIndex) {
-    for (size_t i = startIndex; i <= endIndex; i++) {
-      this->interSum += randInts.at(i);
-    }
-
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(1 + std::rand() / ((RAND_MAX + 1u) / 1000)));
-    
-    std::lock_guard<std::mutex> lock(mutex);
-    finalSum += interSum;
-  }
+  void run(int startIndex, int endIndex);
 };
+
+void Summation::run(int startIndex, int endIndex) {
+  for (size_t i = startIndex; i <= endIndex; i++) {
+    this->interSum += randInts.at(i);
+  }
+
+  {
+    // m.lock();
+    finalSum += interSum;
+    // m.unlock();
+  }
+}
 
 std::vector<int> randIntegerArray(int arraySize, int maxValue) {
   std::vector<int> randInts;
@@ -74,11 +75,11 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
   return std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 }
 
-unsigned long long Summation::finalSum = 0;
+int Summation::finalSum = 0;
 
 int main(int argc, char const *argv[]) {
 
-  std::vector<int> testing = randIntegerArray(10000, INT_MAX - 1);
+  std::vector<int> testing = randIntegerArray(100000000, INT_MAX - 1);
 
   // Summation sum1 = Summation(testing);
   // Summation sum2 = Summation(testing);
@@ -101,11 +102,11 @@ int main(int argc, char const *argv[]) {
   // }
 
   std::cout << "Thread #: " << 100
-            << "\tDuration: " << timeTrial(testing, 100).count()
-            << " milliseconds" << std::endl;
-  std::cout << "Sum: " << Summation::finalSum << std::endl;
+              << "\tDuration: " << timeTrial(testing, 100).count()
+              << " milliseconds" << std::endl;
+    std::cout << "Sum: " << Summation::finalSum << std::endl;
 
-  unsigned long long temp = 0;
+  int temp = 0;
   for (auto &element : testing) {
     temp += element;
   }

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * CS508
+ *
  * @author zea_an
  * @since 2022-02-08
  */
@@ -20,6 +21,7 @@ public class ThreadedSummation {
      */
     private static class Summation implements Runnable {
         static AtomicReference<BigInteger> finalSum = new AtomicReference<>(new BigInteger("0"));
+        //        static BigInteger finalSum = new BigInteger("0");
         BigInteger interSum;
         List<Integer> randInts;
         int startIndex, endIndex;
@@ -27,9 +29,10 @@ public class ThreadedSummation {
         /**
          * Summation class constructor
          * Computes the sum of the Integers within the portion of the list that is passed.
-         * @param randInts List of Integer objects
+         *
+         * @param randInts   List of Integer objects
          * @param startIndex The starting index of the section of the list to be summed
-         * @param endIndex The ending index(inclusive) of the section of the list to be summed
+         * @param endIndex   The ending index(inclusive) of the section of the list to be summed
          */
         private Summation(List<Integer> randInts, int startIndex, int endIndex) {
             interSum = new BigInteger("0");
@@ -46,15 +49,24 @@ public class ThreadedSummation {
             for (int i = startIndex; i <= endIndex; i++) {
                 interSum = interSum.add(BigInteger.valueOf(randInts.get(i).longValue()));
             }
+            try {
+                Random random = new Random();
+                Thread.sleep(random.nextLong(1_000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             finalSum.updateAndGet(v -> v.add(interSum));
+//            finalSum = finalSum.add(interSum);
         }
 
         /**
          * Returns the final sum from the Summation class
+         *
          * @return The cumulative sum from collected from every Summation object
          */
         public static BigInteger getFinalSum() {
             return finalSum.get();
+//            return finalSum;
         }
 
         /**
@@ -62,14 +74,16 @@ public class ThreadedSummation {
          */
         public static void resetFinalSum() {
             finalSum = new AtomicReference<>(new BigInteger("0"));
+//            finalSum = new BigInteger("0");
         }
     }
 
     /**
      * Creates a List object populated with arraySize many random Integers whose value will range from 0 to
      * maxValue(exclusive).
+     *
      * @param arraySize Initial capacity of the list
-     * @param maxValue The high bound(exclusive) of the possible Integers in the list.
+     * @param maxValue  The high bound(exclusive) of the possible Integers in the list.
      * @return List object containing random Integers
      */
     public static List<Integer> randIntegerArray(int arraySize, int maxValue) {
@@ -83,7 +97,8 @@ public class ThreadedSummation {
 
     /**
      * Function to facilitate the testing of the Summation class using various number of threads.
-     * @param testData  The List to be used by all instances of the Summation class.
+     *
+     * @param testData   The List to be used by all instances of the Summation class.
      * @param numThreads Number of threads to use for this time trial run
      * @return The number of milliseconds elapsed during the trial run as a long value
      * @throws InterruptedException Exception thrown when a thread is while it is waiting, sleeping, etc.
@@ -144,7 +159,7 @@ public class ThreadedSummation {
 
         long start = System.currentTimeMillis();
 
-        for (Future x: taskResults){
+        for (Future x : taskResults) {
             x.get();
         }
 
@@ -155,6 +170,7 @@ public class ThreadedSummation {
 
     /**
      * Prints a histogram from the array values passed in
+     *
      * @param histogram An array representing values to be converted into string of characters for histogram
      */
     public static void printHistogram(long[] histogram) {
@@ -166,12 +182,13 @@ public class ThreadedSummation {
         }
 
         for (int i = 0; i < histogram.length; i++) {
-            System.out.println((i + 1) + "\t:" + convertToStars((histogram[i]* 100)/largest));
+            System.out.println((i + 1) + "\t:" + convertToStars((histogram[i] * 100) / largest));
         }
     }
 
     /**
      * Creates a string of stars of length equal to number passed in
+     *
      * @param starCount Number of stars to produce
      * @return String of stars of length starCount
      */
@@ -185,26 +202,47 @@ public class ThreadedSummation {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         List<Integer> testData = randIntegerArray(250_000_000, 100);
-        long[] histogram = new long[100];
+        int numThreads = 100;
 
-        for (int i = 0; i < 100; i++) {
+        BigInteger temp = new BigInteger("0");
+
+        for (Integer i : testData) temp = temp.add(BigInteger.valueOf(i.longValue()));
+        System.out.printf("The sum was %d\n", temp);
+
+        long[] histogram = new long[numThreads];
+
+        int failCount = 0;
+        for (int i = 0; i < numThreads; i++) {
             histogram[i] = timeTrial(testData, i + 1);
-            System.out.printf("Using %d threads\n", i+1);
+            System.out.printf("Using %d threads\n", i + 1);
             System.out.printf("The sum was %d\n", Summation.getFinalSum());
+            if (temp.equals(Summation.getFinalSum())) {
+                System.out.println("EQUAL");
+            } else {
+                System.out.println("NOT EQUAL");
+                failCount++;
+            }
             System.out.printf("The computation took %d milliseconds\n", histogram[i]);
             Summation.resetFinalSum();
         }
 
+        System.out.println("Number of failures: " + failCount);
+
         printHistogram(histogram);
 
-        ExecutorService workers = Executors.newFixedThreadPool(100);
+        ExecutorService workers = Executors.newFixedThreadPool(numThreads);
 
-        histogram = new long[100];
+        histogram = new long[numThreads];
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < numThreads; i++) {
             histogram[i] = timeTrial(testData, i + 1, workers);
-            System.out.printf("Using %d threads\n", i+1);
+            System.out.printf("Using %d threads\n", i + 1);
             System.out.printf("The sum was %d\n", Summation.getFinalSum());
+            if (temp.equals(Summation.getFinalSum())) {
+                System.out.println("EQUAL");
+            } else {
+                System.out.println("NOT EQUAL");
+            }
             System.out.printf("The computation took %d milliseconds\n", histogram[i]);
             Summation.resetFinalSum();
         }
