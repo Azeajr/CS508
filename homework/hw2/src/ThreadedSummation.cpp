@@ -13,6 +13,10 @@
  */
 class Summation {
 private:
+  /**
+   * @brief Needed to make this static so that the mutex object is shared 
+   * across all class objects.
+   */
   static std::mutex mutex;
 
 public:
@@ -47,8 +51,8 @@ public:
      * @brief Putting this thread to sleep to increase the chance that they 
      * will make the program misbehave
      */
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(1 + std::rand() / ((RAND_MAX + 1u) / 1000)));
+    // std::this_thread::sleep_for(
+    //     std::chrono::milliseconds(1 + std::rand() / ((RAND_MAX + 1u) / 1000)));
 
     /**
      * @brief As far as I understand this, lock_guard does the work of locking 
@@ -59,8 +63,10 @@ public:
      * 
      * @return std::lock_guard<std::mutex> 
      */
-    std::lock_guard<std::mutex> lock(mutex);
+    // std::lock_guard<std::mutex> lock(mutex);
+    mutex.lock();
     finalSum += interSum;
+    mutex.unlock();
   }
 };
 
@@ -118,7 +124,7 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
   }
   auto end = std::chrono::steady_clock::now();
 
-  return std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  return std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 }
 
 unsigned long long Summation::finalSum = 0;
@@ -126,7 +132,7 @@ std::mutex Summation::mutex;
 
 int main(int argc, char const *argv[]) {
 
-  std::vector<int> testing = randIntegerArray(10000, INT_MAX - 1);
+  std::vector<int> testing = randIntegerArray(1000000, INT_MAX - 1);
 
   /**
    * @brief Test summing the vector using 1 through 100 threads.
@@ -135,7 +141,7 @@ int main(int argc, char const *argv[]) {
   for (size_t i = 1; i <= 100; i++) {
     std::cout << "Thread #: " << i
               << "\tDuration: " << timeTrial(testing, i).count()
-              << " milliseconds" << std::endl;
+              << " microseconds" << std::endl;
     std::cout << "Sum: " << Summation::finalSum << std::endl;
   }
 
