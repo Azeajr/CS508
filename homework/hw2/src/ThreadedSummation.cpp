@@ -1,3 +1,16 @@
+/**
+ * @file ThreadedSummation.cpp
+ * @author Antonio Zea
+ * @brief Use threads in parallel to sum an array of integers.
+ * Compile: g++ ThreadedSummation.cpp -std=c++11
+ * 
+ * @version 0.1
+ * @date 2022-03-09
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
@@ -16,6 +29,7 @@ private:
   /**
    * @brief Needed to make this static so that the mutex object is shared
    * across all class objects.
+   * Not used in current implementation.
    */
   // static std::mutex mutex;
 
@@ -25,6 +39,11 @@ public:
    * class. Each Summation object will have its own intersum.
    */
   static std::atomic_ullong finalSum;
+  /**
+   * @brief Previous iteration of program was non atomic and used mutex for 
+   * thread safety
+   * Not used in current implementation.
+   */
   // static unsigned long long finalSum;
   unsigned long long interSum;
   std::vector<int> randInts;
@@ -48,10 +67,9 @@ public:
     for (size_t i = startIndex; i <= endIndex; i++) {
       this->interSum += randInts.at(i);
     }
-    // std::cout << "InterSum: " << interSum << std::endl;
     /**
-     * @brief Putting this thread to sleep to increase the chance that they
-     * will make the program misbehave
+     * @brief Putting this thread to sleep for a random amount of time to 
+     * increase the chance that a race condition will occur
      */
     // std::this_thread::sleep_for(
     //     std::chrono::milliseconds(1 + std::rand() / ((RAND_MAX + 1u) /
@@ -63,16 +81,21 @@ public:
      * mutex once control leaves the scope in which the lock_guard was created.
      *
      * I expect this to have the same effect as synchronized in java
-     *
+     * Not used in current implementation.
+     * 
      * @return std::lock_guard<std::mutex>
      */
     // std::lock_guard<std::mutex> lock(mutex);
     /**
      * @brief Using mutex manually
+     * Not used in current implementation.
      */
     // mutex.lock();
 
     finalSum += interSum;
+    /**
+     * @brief Not used in current implementation.
+     */
     // mutex.unlock();
   }
 };
@@ -105,9 +128,7 @@ std::vector<int> randIntegerArray(int arraySize, int maxValue) {
  */
 std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
   Summation::finalSum = 0;
-  // Summation *sum = new Summation(testData);
   std::vector<std::thread> threads;
-  // std::thread threads[numThreads];
 
   int smallStep = testData.size() / numThreads;
   int overflow = testData.size() % numThreads;
@@ -116,8 +137,11 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
 
   auto start = std::chrono::steady_clock::now();
 
+  /**
+   * @brief Handle the balanceing of how many elements each thread will try to 
+   * sum
+   */
   for (int i = 0; i < numThreads; i++) {
-
     startIndex = endIndex + 1;
     if (i < overflow) {
       endIndex = startIndex + smallStep;
@@ -127,11 +151,8 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
     threads.push_back(std::thread(&Summation::run, new Summation(testData),
                                   startIndex, endIndex));
   }
-  // for (auto &&thread : threads) {
-  //   thread->join();
-  // }
-  for (size_t i = 0; i < threads.size(); i++) {
-    threads[i].join();
+  for (auto &&thread : threads) {
+    thread.join();
   }
 
   auto end = std::chrono::steady_clock::now();
@@ -140,6 +161,11 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
 }
 
 std::atomic_ullong Summation::finalSum(0);
+/**
+ * @brief Previous iterations of this program used non atomic finalSum and
+ * mutex to lock the portion of the code that needed to be thread safe.
+ * Not used in current implementation.
+ */
 // unsigned long long Summation::finalSum = 0;
 // std::mutex Summation::mutex;
 
