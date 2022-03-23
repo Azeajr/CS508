@@ -46,14 +46,14 @@ public:
    */
   // static unsigned long long finalSum;
   unsigned long long interSum;
-  std::vector<int> randInts;
+  std::vector<int> *randInts;
   int startIndex, endIndex;
   /**
    * @brief Construct a new Summation object
    *
    * @param randInts A vector containing all the integers to be added
    */
-  Summation(std::vector<int> randInts) {
+  Summation(std::vector<int> *randInts) {
     interSum = 0;
     this->randInts = randInts;
   }
@@ -65,7 +65,7 @@ public:
    */
   void run(int startIndex, int endIndex) {
     for (size_t i = startIndex; i <= endIndex; i++) {
-      this->interSum += randInts.at(i);
+      this->interSum += randInts->at(i);
     }
     /**
      * @brief Putting this thread to sleep for a random amount of time to 
@@ -148,7 +148,7 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
     } else {
       endIndex = startIndex + smallStep - 1;
     }
-    threads.push_back(std::thread(&Summation::run, new Summation(testData),
+    threads.push_back(std::thread(&Summation::run, new Summation(&testData),
                                   startIndex, endIndex));
   }
   for (auto &&thread : threads) {
@@ -171,7 +171,7 @@ std::atomic_ullong Summation::finalSum(0);
 
 int main(int argc, char const *argv[]) {
 
-  std::vector<int> testing = randIntegerArray(1000000, INT_MAX - 1);
+  std::vector<int> testing = randIntegerArray(250000000, 100);
 
   /**
    * @brief Test summing the vector using 1 through 100 threads.
