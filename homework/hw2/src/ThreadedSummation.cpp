@@ -2,16 +2,18 @@
  * @file ThreadedSummation.cpp
  * @author Antonio Zea
  * @brief Use threads in parallel to sum an array of integers.
- * Compile: g++ ThreadedSummation.cpp -std=c++11
- * 
+ * Compile: g++ ThreadedSummation.cpp -std=c++11 -g -pthread
+ *
  * @version 0.1
  * @date 2022-03-09
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
+#include <atomic>
 #include <chrono>
+#include <climits>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -40,22 +42,22 @@ public:
    */
   static std::atomic_ullong finalSum;
   /**
-   * @brief Previous iteration of program was non atomic and used mutex for 
+   * @brief Previous iteration of program was non atomic and used mutex for
    * thread safety
    * Not used in current implementation.
    */
   // static unsigned long long finalSum;
   unsigned long long interSum;
-  std::vector<int> *randInts;
+  std::vector<int> &randInts;
   int startIndex, endIndex;
   /**
    * @brief Construct a new Summation object
    *
    * @param randInts A vector containing all the integers to be added
    */
-  Summation(std::vector<int> *randInts) {
+  Summation(std::vector<int> &randInts) : randInts(randInts) {
     interSum = 0;
-    this->randInts = randInts;
+    // this->randInts = randInts;
   }
   /**
    * @brief Class function that will be run by threads.
@@ -65,10 +67,10 @@ public:
    */
   void run(int startIndex, int endIndex) {
     for (size_t i = startIndex; i <= endIndex; i++) {
-      this->interSum += randInts->at(i);
+      this->interSum += randInts.at(i);
     }
     /**
-     * @brief Putting this thread to sleep for a random amount of time to 
+     * @brief Putting this thread to sleep for a random amount of time to
      * increase the chance that a race condition will occur
      */
     // std::this_thread::sleep_for(
@@ -82,7 +84,7 @@ public:
      *
      * I expect this to have the same effect as synchronized in java
      * Not used in current implementation.
-     * 
+     *
      * @return std::lock_guard<std::mutex>
      */
     // std::lock_guard<std::mutex> lock(mutex);
@@ -126,7 +128,7 @@ std::vector<int> randIntegerArray(int arraySize, int maxValue) {
  * @return std::chrono::microseconds Duration of how long it took to sum the
  * integers using this many threads
  */
-std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
+std::chrono::microseconds timeTrial(std::vector<int> &testData, int numThreads) {
   Summation::finalSum = 0;
   std::vector<std::thread> threads;
 
@@ -138,7 +140,7 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
   auto start = std::chrono::steady_clock::now();
 
   /**
-   * @brief Handle the balanceing of how many elements each thread will try to 
+   * @brief Handle the balanceing of how many elements each thread will try to
    * sum
    */
   for (int i = 0; i < numThreads; i++) {
@@ -148,7 +150,7 @@ std::chrono::microseconds timeTrial(std::vector<int> testData, int numThreads) {
     } else {
       endIndex = startIndex + smallStep - 1;
     }
-    threads.push_back(std::thread(&Summation::run, new Summation(&testData),
+    threads.push_back(std::thread(&Summation::run, Summation(testData),
                                   startIndex, endIndex));
   }
   for (auto &&thread : threads) {
@@ -171,7 +173,7 @@ std::atomic_ullong Summation::finalSum(0);
 
 int main(int argc, char const *argv[]) {
 
-  std::vector<int> testing = randIntegerArray(250000000, 100);
+  std::vector<int> testing = randIntegerArray(1000000, INT_MAX - 1);
 
   /**
    * @brief Test summing the vector using 1 through 100 threads.
