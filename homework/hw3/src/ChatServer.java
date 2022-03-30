@@ -44,7 +44,7 @@ public class ChatServer implements Runnable {
             });
 
             /**
-             * fromClient is the BuffererReader tied into the clients input.  So fromClient will receive messages from
+             * fromClient is the BufferedReader tied into the clients input.  So fromClient will receive messages from
              * a particular client connected to this thread instance of the server.
              */
             fromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
